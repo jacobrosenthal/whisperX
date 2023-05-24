@@ -1,0 +1,12 @@
+{
+  "name": "Whisperx",
+  "category": "Audio",
+  "example_input": {
+    "file": "somebase64string",
+    "number_speakers": 3
+  },
+  "example_output": {
+    "text": "[{\"Start\": \"0:00:00\", \"End\": \"0:00:12\", \"Speaker\": \"SPEAKER 1\", \"Text\": \" it was rather interesting just to watch some gathering their materials and some  vassu around you know they're kicked there what they call it kangaroo walkers or something \"}, {\"Start\": \"0:00:12\", \"End\": \"0:00:19\", \"Speaker\": \"SPEAKER 2\", \"Text\": \" like that I don't know I bet those men are going to get quite a reception when they get that \"}, {\"Start\": \"0:00:19\", \"End\": \"0:00:19\", \"Speaker\": \"SPEAKER 3\", \"Text\": \" oh yes I'll be so glad when they land that now but \"}]"
+  },
+  "version": "1"
+}

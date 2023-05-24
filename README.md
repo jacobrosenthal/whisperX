@@ -280,3 +280,7 @@ If you use this in your research, please cite the paper:
   year={2023}
 }
 ```
+
+# banana
+test locally
+`echo "{\"file\": \"data:audio/mpeg;base64,$(base64 -w 0 output.mp3)\", \"number_speakers\": 2}" > payload.json && curl -X POST -H "Content-Type: application/json" --data-binary "@payload.json" http://localhost:8000/`
