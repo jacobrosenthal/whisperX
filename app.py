@@ -81,7 +81,7 @@ def handler(context: dict, request: Request) -> Response:
     result = whisperx.assign_word_speakers(diarize_segments, result)
 
     return Response(
-        json={"output": result["segments"]},
+        json=result,
         status=200
     )
 
