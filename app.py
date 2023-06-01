@@ -9,11 +9,10 @@ import os
 
 app = Potassium("my_app")
 
-# @app.init runs at startup, and loads models into the app's context
-
 
 @app.init
 def init():
+    batch_size = 16
 
     hf_auth_token = os.environ.get('HF_AUTH_TOKEN')
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -28,6 +27,7 @@ def init():
         "model": model,
         "diarize_model": diarize_model,
         "device": device,
+        "batch_size": batch_size
     }
 
     return context
@@ -35,22 +35,19 @@ def init():
 
 @app.handler()
 def handler(context: dict, request: Request) -> Response:
-    batch_size = 16
 
     base64file = request.json.get("file")
-    number_speakers = request.json.get("number_speakers")
-
     if base64file == None or base64file == '':
         return {'message': "No correct input provided"}
 
-    try:
-        number_speakers = int(number_speakers)
-    except ValueError:
-        return {'message': "number_speakers not an integer"}
-
-    model = context.get("model")
-    diarize_model = context.get("diarize_model")
-    device = context.get("device")
+    number_speakers = request.json.get("number_speakers")
+    if number_speakers == None or number_speakers == '':
+        number_speakers = 0
+    else:
+        try:
+            number_speakers = int(number_speakers)
+        except ValueError:
+            return {'message': "number_speakers not an integer"}
 
     base64_data = base64file.split(",")[1]
     file_data = base64.b64decode(base64_data)
@@ -62,11 +59,14 @@ def handler(context: dict, request: Request) -> Response:
         f.write(file_data)
 
     audio = whisperx.load_audio(audio_file)
+    model = context.get("model")
+    batch_size = context.get("batch_size")
     result = model.transcribe(audio, batch_size=batch_size)
     gc.collect()
     torch.cuda.empty_cache()
     del model
 
+    device = context.get("device")
     model_a, metadata = whisperx.load_align_model(
         language_code=result["language"], device=device)
     result = whisperx.align(
@@ -75,9 +75,9 @@ def handler(context: dict, request: Request) -> Response:
     torch.cuda.empty_cache()
     del model_a
 
-    diarize_segments = diarize_model(
-        audio_file, min_speakers=number_speakers, max_speakers=number_speakers)
-
+    diarize_model = context.get("diarize_model")
+    diarize_segments = diarize_model(audio_file, min_speakers=number_speakers,
+                                     max_speakers=number_speakers) if number_speakers != 0 else diarize_model(audio_file)
     result = whisperx.assign_word_speakers(diarize_segments, result)
 
     return Response(
